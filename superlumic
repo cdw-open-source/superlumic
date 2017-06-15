@@ -9,11 +9,11 @@ Color_Off='\e[0m' # Text Reset
 
 # Head
 # =========================================================
-
+  
 printf "${BGreen}   _________                          __                 __          ${Color_Off}\n"
 printf "${BGreen}  /   _____/__ ________   ___________|  |  __ __  _____ |__| ____    ${Color_Off}\n"
 printf "${BGreen}  \_____  \|  |  \____ \_/ __ \_  __ \  | |  |  \/     \|  |/ ___\   ${Color_Off}\n"
-printf "${BGreen}  /        \  |  /  |_] |  ___/|  | \/  |_|  |  /  Y Y  \  \  \___   ${Color_Off}\n"
+printf "${BGreen}  /        \  |  /  |_) |  ___/|  | \/  |_|  |  /  Y Y  \  \  \___   ${Color_Off}\n"
 printf "${BGreen} /_______  /____/|   __/ \___  )__|  |____/____/|__|_|  /__|\___  )  ${Color_Off}\n"
 printf "${BGreen}         \/      |__|        \/ http://superlumic.com \/        \/ 2 ${Color_Off}\n\n"
 
@@ -107,11 +107,12 @@ function install_clt {
 setStatusMessage "Checking if we need to ask for a sudo password"
 
 sudo -v                     # Validate sudo
-export ask_sudo_pass = True # Make ask_sudo_pass avaliable and define as true
+export ask_sudo_pass = True # Make ask_sudo_pass avaliable and define as true variable
 
-setStatusMessage "Keep-alive: update existing sudo time stamp until we are finished" 
+setStatusMessage "Keep-alive: update existing sudo time stamp until we are finished"
 
-while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
+# Keep-alive: update existing sudo time stamp if set, otherwise do nothing.
+while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null & 
 
 # Environment Parameters
 # =========================================================
@@ -124,72 +125,91 @@ if [ ! -z "$2" ]; then
     username=$2 # Set username to passed parameter 2
 fi
 
+export HOMEBREW_CASK_OPTS="--appdir=/Applications" # Make avaliable and set Homebrew Casks Application directory variable
 
+# Install Dependencies
+# =========================================================
 
+# Check if we have each dependency and if we do not install them
 
-
-
-
-
-
-
-export HOMEBREW_CASK_OPTS="--appdir=/Applications" # Set Homebrew Casks Application directory
-
+# Install Apple Xcode Command Line Tools
 if [[ ! -f "/Library/Developer/CommandLineTools/usr/bin/clang" ]]; then
-    setStatusMessage "Install the CLT"
+    setStatusMessage "Install Xcode CLT" 
     install_clt
 fi
 
-# Install Ansible
+# Install PIP (Python Package Installer)
 if ! exists pip; then
     setStatusMessage "Install PIP"
     sudo easy_install --quiet pip
 fi
+
+# Install Ansible
 if ! exists ansible; then
     setStatusMessage "Install Ansible"
     pip install --upgrade setuptools --user python
     sudo pip install -q ansible
 fi
 
+# Setup Directories
+# =========================================================
+
 setStatusMessage "Create necessary folders"
 
-sudo mkdir -p /usr/local/superlumic
-sudo mkdir -p /usr/local/superlumic/roles
-sudo chmod -R g+rwx /usr/local
-sudo chgrp -R admin /usr/local
+sudo mkdir -p /usr/local/superlumic       # Create Superlumic directory
+sudo mkdir -p /usr/local/superlumic/roles # Create Superlumic roles directory
+sudo chmod -R g+rwx /usr/local            # Set permissions for /usr/local
+sudo chgrp -R admin /usr/local            # Change group for /usr/local
 
+# Git
+# =========================================================
+
+# If we have a config locally git pull, otherwise clone it from repo
 if [ -d "/usr/local/superlumic/config" ]; then
     setStatusMessage "Update your config from git"
     cd /usr/local/superlumic/config
-    git pull -q
+    git pull -q # git pull quitely
 else
+    # If we have a repo URL passed clone that repo, otherwise clone the default Superlumic config
     if [ ! -z "$repo" ]; then
         setStatusMessage "Getting your config from your fork"
-        git clone -q $1 /usr/local/superlumic/config
+        git clone -q $1 /usr/local/superlumic/config # git clone quitely from passed repo
     else
         setStatusMessage "Getting the default config"
-        git clone -q https://github.com/superlumic/superlumic-config.git /usr/local/superlumic/config
+        git clone -q https://github.com/superlumic/superlumic-config.git /usr/local/superlumic/config # git clone quitely from default repo
     fi
 fi
 
 cd /usr/local/superlumic
 
+# Ansible Playbook Roles
+# =========================================================
+
 setStatusMessage "Create ansible.cfg"
 
+# In a subshell set default role paths to superlumic/roles and superlumic/config/roles in ansible.cfg file
+# http://docs.ansible.com/ansible/intro_configuration.html#roles-path
 { echo '[defaults]'; echo 'roles_path=/usr/local/superlumic/roles:/usr/local/superlumic/config/roles'; } > ansible.cfg
 
 setStatusMessage "Get all the required roles"
 
-ansible-galaxy install -f -r config/requirements.yml -p roles
+# Install roles set in requirements file from Ansible Galaxy
+ansible-galaxy install -f -r config/requirements.yml -p roles 
 
+# Execute Superlumic Configuration Playbook
+# =========================================================
+
+# If we have a configuration file for current username execute playbook for user, otherwise notify no playbook found
 if [ -f "config/$username.yml" ]; then
     setStatusMessage "Running the ansible playbook for $username"
     ansible-playbook -i "localhost," config/$username.yml
 else
+    # If username is travis run default username playbook, otherwise notify no playbook found
     if [ "travis" = "$username" ]; then
         setStatusMessage "Running the ansible playbook for $username but use roderik.yml as fallback"
         ansible-playbook -i "localhost," config/roderik.yml
     else
         triggerError "No playbook for $username found"
+
     fi
 fi
