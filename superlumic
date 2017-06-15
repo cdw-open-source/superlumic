@@ -1,35 +1,65 @@
 #!/bin/bash
 
-BGreen='\e[1;32m'       # Green
-BRed='\e[1;31m'         # Red
-Color_Off='\e[0m'       # Text Reset
+# Formatting
+# =========================================================
 
+BGreen='\e[1;32m' # Green
+BRed='\e[1;31m'   # Red
+IRed='\033[0;91m' # Intense Red
+Color_Off='\e[0m' # Text Reset
+
+# Head
+# =========================================================
+
+printf "${BGreen}   _________                          __                 __          ${Color_Off}\n"
+printf "${BGreen}  /   _____/__ ________   ___________|  |  __ __  _____ |__| ____    ${Color_Off}\n"
+printf "${BGreen}  \_____  \|  |  \____ \_/ __ \_  __ \  | |  |  \/     \|  |/ ___\   ${Color_Off}\n"
+printf "${BGreen}  /        \  |  /  |_] |  ___/|  | \/  |_|  |  /  Y Y  \  \  \___   ${Color_Off}\n"
+printf "${BGreen} /_______  /____/|   __/ \___  )__|  |____/____/|__|_|  /__|\___  )  ${Color_Off}\n"
+printf "${BGreen}         \/      |__|        \/ http://superlumic.com \/        \/ 2 ${Color_Off}\n\n"
+
+# Functions
+# =========================================================
+
+# setStatusMessage() Function
+#
+# Prints out a status messages with the appropriate color.
+#
+# @param  string Message to print
+# @return none
 function setStatusMessage {
     printf "${IRed} --> ${BGreen}$1${Color_Off}\n" 1>&2
 }
 
-printf "${BGreen}   _________                         .__                .__        ${Color_Off}\n"
-printf "${BGreen}  /   _____/__ ________   ___________|  |  __ __  _____ |__| ____  ${Color_Off}\n"
-printf "${BGreen}  \_____  \|  |  \____ \_/ __ \_  __ \  | |  |  \/     \|  |/ ___\ ${Color_Off}\n"
-printf "${BGreen}  /        \  |  /  |_> >  ___/|  | \/  |_|  |  /  Y Y  \  \  \___ ${Color_Off}\n"
-printf "${BGreen} /_______  /____/|   __/ \___  >__|  |____/____/|__|_|  /__|\___  >${Color_Off}\n"
-printf "${BGreen}         \/      |__|        \/ http://superlumic.com \/        \/ ${Color_Off}\n\n"
-
-setStatusMessage "Checking if we need to ask for a sudo password"
-
-sudo -v
-export ANSIBLE_ASK_SUDO_PASS=True
-
-repo=$1
-username=$USER
-if [ ! -z "$2" ]; then
-    username=$2
-fi
-
+# triggerError() Function
+#
+# Print error and stop execution
+#
+# @param  string Message to print
+# @return none
 function triggerError {
     printf "${BRed} --> $1 ${Color_Off}\n" 1>&2
     exit 1
 }
+
+# Sudo
+# =========================================================
+
+setStatusMessage "Checking if we need to ask for a sudo password"
+
+sudo -v                     # Validate sudo
+export ask_sudo_pass = True # Make ask_sudo_pass avaliable and define as true
+
+# Environment Parameters
+# =========================================================
+
+repo=$1        # The first passed parameter is your configuration repo clone URL
+username=$USER # Set username from environment variable
+
+# If we have a second parameter ($2 is not null) set it as username
+if [ ! -z "$2" ]; then
+    username=$2 # Set username to passed parameter 2
+fi
 
 # Check whether a command exists - returns 0 if it does, 1 if it does not
 function exists {
