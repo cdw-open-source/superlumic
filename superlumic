@@ -5,7 +5,6 @@
 
 BGreen='\e[1;32m' # Green
 BRed='\e[1;31m'   # Red
-IRed='\033[0;91m' # Intense Red
 Color_Off='\e[0m' # Text Reset
 
 # Head
@@ -28,67 +27,62 @@ printf "${BGreen}         \/      |__|        \/ http://superlumic.com \/       
 # @param  string Message to print
 # @return none
 function setStatusMessage {
-    printf "${IRed} --> ${BGreen}$1${Color_Off}\n" 1>&2
+    printf " --> ${BGreen}$1${Color_Off}\n" 1>&2
 }
 
 # triggerError() Function
 #
-# Print error and stop execution
+# Print error and exit script with failure
 #
-# @param  string Message to print
+# @param  string Error message to print
 # @return none
 function triggerError {
-    printf "${BRed} --> $1 ${Color_Off}\n" 1>&2
-    exit 1
+    printf "${BRed} --> $1 ${Color_Off}\n" 1>&2 # print error message
+    exit 1                                      # exit with failure
 }
 
-# Sudo
-# =========================================================
-
-setStatusMessage "Checking if we need to ask for a sudo password"
-
-sudo -v                     # Validate sudo
-export ask_sudo_pass = True # Make ask_sudo_pass avaliable and define as true
-
-# Environment Parameters
-# =========================================================
-
-repo=$1        # The first passed parameter is your configuration repo clone URL
-username=$USER # Set username from environment variable
-
-# If we have a second parameter ($2 is not null) set it as username
-if [ ! -z "$2" ]; then
-    username=$2 # Set username to passed parameter 2
-fi
-
-# Check whether a command exists - returns 0 if it does, 1 if it does not
+# exists() Function
+#
+# Check whether a command exists
+#
+# @param  string command to check
+# @return int    0 if command exists 
+#                1 if command does not exist
 function exists {
-  if command -v $1 >/dev/null 2>&1
+  if command -v $1 >/dev/null 2>&1 # Does command exist? (redirect both output and errors to null)
   then
-    return 0
+    return 0 # Return 0 (exists)
   else
-    return 1
+    return 1 # Return 1 (does not exist)
   fi
 }
-
+ 
+# install_clt() Function
+#
+# Checks macOS version and installs the appropriate Apple Xcode command line tools.
+#
 # credits https://github.com/boxcutter/osx/blob/master/script/xcode-cli-tools.sh
+# 
+# @return none
 function install_clt {
-    # Get and install Xcode CLI tools
-    OSX_VERS=$(sw_vers -productVersion | awk -F "." '{print $2}')
 
-    # on 10.9+, we can leverage SUS to get the latest CLI tools
+    # Get macOS version and only variable with the center version number (10.12.5 -> 12)
+    OSX_VERS=$(sw_vers -productVersion | awk -F "." '{print $2}') 
+
+    # On 10.9+, we can leverage SUS to get the latest CLI tools
     if [ "$OSX_VERS" -ge 9 ]; then
-        # create the placeholder file that's checked by CLI updates' .dist code
-        # in Apple's SUS catalog
+
+        # Create the placeholder file that's checked by CLI updates' .dist code in Apple's SUS catalog
         touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
-        # find the CLI Tools update
+
+        # Find the CLI Tools update
         PROD=$(softwareupdate -l | grep "\*.*Command Line" | head -n 1 | awk -F"*" '{print $2}' | sed -e 's/^ *//' | tr -d '\n')
-        # install it
+
+        # Install it
         softwareupdate -i "$PROD" --verbose
         rm /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
 
-    # on 10.7/10.8, we instead download from public download URLs, which can be found in
-    # the dvtdownloadableindex:
+    # on 10.7/10.8, we instead download from public download URLs, which can be found in the dvtdownloadableindex:
     # https://devimages.apple.com.edgekey.net/downloads/xcode/simulators/index-3905972D-B609-49CE-8D06-51ADC78E07BC.dvtdownloadableindex
     else
         [ "$OSX_VERS" -eq 7 ] && DMGURL=http://devimages.apple.com.edgekey.net/downloads/xcode/command_line_tools_for_xcode_os_x_lion_april_2013.dmg
@@ -107,11 +101,39 @@ function install_clt {
     fi
 }
 
-setStatusMessage "Keep-alive: update existing sudo time stamp until we are finished"
+# Sudo
+# =========================================================
+
+setStatusMessage "Checking if we need to ask for a sudo password"
+
+sudo -v                     # Validate sudo
+export ask_sudo_pass = True # Make ask_sudo_pass avaliable and define as true
+
+setStatusMessage "Keep-alive: update existing sudo time stamp until we are finished" 
 
 while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 
-export HOMEBREW_CASK_OPTS="--appdir=/Applications"
+# Environment Parameters
+# =========================================================
+
+repo=$1        # The first passed parameter is your configuration repo clone URL
+username=$USER # Set username from environment variable
+
+# If we have a second parameter ($2 is not null) set it as username
+if [ ! -z "$2" ]; then
+    username=$2 # Set username to passed parameter 2
+fi
+
+
+
+
+
+
+
+
+
+
+export HOMEBREW_CASK_OPTS="--appdir=/Applications" # Set Homebrew Casks Application directory
 
 if [[ ! -f "/Library/Developer/CommandLineTools/usr/bin/clang" ]]; then
     setStatusMessage "Install the CLT"
