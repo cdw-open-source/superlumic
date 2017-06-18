@@ -106,8 +106,8 @@ function install_clt {
 
 setStatusMessage "Checking if we need to ask for a sudo password"
 
-sudo -v                     # Validate sudo
-export ask_sudo_pass = True # Make ask_sudo_pass avaliable and define as true variable
+sudo -v                   # Validate sudo
+export ask_sudo_pass=True # Make ask_sudo_pass avaliable and define as true variable
 
 setStatusMessage "Keep-alive: update existing sudo time stamp until we are finished"
 
