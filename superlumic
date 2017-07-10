@@ -9,7 +9,7 @@ Color_Off='\e[0m' # Text Reset
 
 # Head
 # =========================================================
-  
+
 printf "${BGreen}   _________                          __                 __          ${Color_Off}\n"
 printf "${BGreen}  /   _____/__ ________   ___________|  |  __ __  _____ |__| ____    ${Color_Off}\n"
 printf "${BGreen}  \_____  \|  |  \____ \_/ __ \_  __ \  | |  |  \/     \|  |/ ___\   ${Color_Off}\n"
@@ -46,7 +46,7 @@ function triggerError {
 # Check whether a command exists
 #
 # @param  string command to check
-# @return int    0 if command exists 
+# @return int    0 if command exists
 #                1 if command does not exist
 function exists {
   if command -v $1 >/dev/null 2>&1 # Does command exist? (redirect both output and errors to null)
@@ -56,18 +56,18 @@ function exists {
     return 1 # Return 1 (does not exist)
   fi
 }
- 
+
 # install_clt() Function
 #
 # Checks macOS version and installs the appropriate Apple Xcode command line tools.
 #
 # credits https://github.com/boxcutter/osx/blob/master/script/xcode-cli-tools.sh
-# 
+#
 # @return none
 function install_clt {
 
     # Get macOS version and only variable with the center version number (10.12.5 -> 12)
-    OSX_VERS=$(sw_vers -productVersion | awk -F "." '{print $2}') 
+    OSX_VERS=$(sw_vers -productVersion | awk -F "." '{print $2}')
 
     # On 10.9+, we can leverage SUS to get the latest CLI tools
     if [ "$OSX_VERS" -ge 9 ]; then
@@ -112,7 +112,7 @@ export ask_sudo_pass=True # Make ask_sudo_pass avaliable and define as true vari
 setStatusMessage "Keep-alive: update existing sudo time stamp until we are finished"
 
 # Keep-alive: update existing sudo time stamp if set, otherwise do nothing.
-while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null & 
+while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 
 # Environment Parameters
 # =========================================================
@@ -134,7 +134,7 @@ export HOMEBREW_CASK_OPTS="--appdir=/Applications" # Make avaliable and set Home
 
 # Install Apple Xcode Command Line Tools
 if [[ ! -f "/Library/Developer/CommandLineTools/usr/bin/clang" ]]; then
-    setStatusMessage "Install Xcode CLT" 
+    setStatusMessage "Install Xcode CLT"
     install_clt
 fi
 
@@ -194,7 +194,7 @@ setStatusMessage "Create ansible.cfg"
 setStatusMessage "Get all the required roles"
 
 # Install roles set in requirements file from Ansible Galaxy
-ansible-galaxy install -f -r config/requirements.yml -p roles 
+ansible-galaxy install --force -r config/requirements.yml -p roles
 
 # Execute Superlumic Configuration Playbook
 # =========================================================
