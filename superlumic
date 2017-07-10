@@ -194,7 +194,7 @@ setStatusMessage "Create ansible.cfg"
 setStatusMessage "Get all the required roles"
 
 # Install roles set in requirements file from Ansible Galaxy
-ansible-galaxy install --force -r config/requirements.yml -p roles
+ansible-galaxy install -f -r config/requirements.yml -p roles
 
 # Execute Superlumic Configuration Playbook
 # =========================================================
