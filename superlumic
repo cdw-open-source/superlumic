@@ -158,8 +158,8 @@ setStatusMessage "Create necessary folders"
 
 sudo mkdir -p /usr/local/superlumic       # Create Superlumic directory
 sudo mkdir -p /usr/local/superlumic/roles # Create Superlumic roles directory
-sudo chmod -R g+rwx /usr/local            # Set permissions for /usr/local
-sudo chgrp -R admin /usr/local            # Change group for /usr/local
+# sudo chmod -R g+rwx /usr/local            # Set permissions for /usr/local
+# sudo chgrp -R admin /usr/local            # Change group for /usr/local
 
 # Git
 # =========================================================
