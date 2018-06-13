@@ -15,7 +15,7 @@ printf "${BGreen}  /   _____/__ ________   ___________|  |  __ __  _____ |__| __
 printf "${BGreen}  \_____  \|  |  \____ \_/ __ \_  __ \  | |  |  \/     \|  |/ ___\   ${Color_Off}\n"
 printf "${BGreen}  /        \  |  /  |_) |  ___/|  | \/  |_|  |  /  Y Y  \  \  \___   ${Color_Off}\n"
 printf "${BGreen} /_______  /____/|   __/ \___  )__|  |____/____/|__|_|  /__|\___  )  ${Color_Off}\n"
-printf "${BGreen}         \/      |__|        \/ http://superlumic.com \/        \/ 2 ${Color_Off}\n\n"
+printf "${BGreen}         \/      |__|        \/ http://superlumic.com \/        \/ ⌥ ${Color_Off}\n\n"
 
 # Functions
 # =========================================================
@@ -167,7 +167,7 @@ sudo mkdir -p /usr/local/superlumic/roles # Create Superlumic roles directory
 # If we have a config locally git pull, otherwise clone it from repo
 if [ -d "/usr/local/superlumic/config" ]; then
     setStatusMessage "Update your config from git"
-    cd /usr/local/superlumic/config
+    cd /usr/local/superlumic/config || exit
     git pull -q # git pull quitely
 else
     # If we have a repo URL passed clone that repo, otherwise clone the default Superlumic config
@@ -180,7 +180,7 @@ else
     fi
 fi
 
-cd /usr/local/superlumic
+cd /usr/local/superlumic || exit
 
 # Ansible Playbook Roles
 # =========================================================
